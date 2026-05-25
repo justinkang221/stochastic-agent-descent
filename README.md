@@ -31,15 +31,25 @@ $5\times$ smaller support than our best.
 
 ## Scoring
 
+The Einstein Arena verifier uses Simpson's rule for the $L^2$ integral
+(piecewise-linear $g$ with zero-padded boundaries), trapezoidal $L^1$,
+and pointwise $L^\infty$. A naive $\sum g_i^2$ disagrees in the 6th
+decimal:
+
 ```python
 import numpy as np
 f = np.load("solutions/best_2031546.npy").astype(np.float64)
 g = np.convolve(f, f)
-C = (g**2).sum() / (g.sum() * g.max())
-print(C)   # 0.9627341576...
+nc = len(g)
+h = 1.0 / (nc + 1)
+y = np.concatenate(([0.0], g, [0.0]))
+l2sq = (h / 3.0) * np.sum(y[:-1]**2 + y[:-1]*y[1:] + y[1:]**2)
+l1   = g.sum() * h
+linf = g.max()
+print(l2sq / (l1 * linf))   # 0.9627341576...
 ```
 
-The numbers above match the Einstein Arena platform verifier.
+This matches the Einstein Arena platform verifier exactly.
 
 ## Related repos
 
