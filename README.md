@@ -31,30 +31,20 @@ $5\times$ smaller support than our best.
 
 ## Scoring
 
-The Einstein Arena verifier uses Simpson's rule for the $L^2$ integral
+`verify.py` reproduces the Einstein Arena platform verifier exactly:
+FFT autoconvolution, Simpson's rule for the $L^2$ integral
 (piecewise-linear $g$ with zero-padded boundaries), trapezoidal $L^1$,
-and pointwise $L^\infty$. A naive $\sum g_i^2$ disagrees in the 6th
-decimal:
+and pointwise $L^\infty$.
 
-```python
-import numpy as np
-f = np.load("solutions/best_2031546.npy").astype(np.float64)
-n = len(f)
-# autoconvolution via FFT (np.convolve is O(N^2) and intractable at N=2M)
-nfft = 1
-while nfft < 2 * n - 1: nfft <<= 1
-F = np.fft.rfft(f, n=nfft)
-g = np.fft.irfft(F * F, n=nfft)[:2 * n - 1]
-nc = len(g)
-h  = 1.0 / (nc + 1)
-y  = np.concatenate(([0.0], g, [0.0]))
-l2sq = (h / 3.0) * np.sum(y[:-1]**2 + y[:-1]*y[1:] + y[1:]**2)
-l1   = g.sum() * h
-linf = g.max()
-print(l2sq / (l1 * linf))   # 0.9627341576...
+```
+$ python verify.py solutions/best_2031546.npy
+N        = 2,031,546
+C        = 0.9627341576
 ```
 
-This matches the Einstein Arena platform verifier exactly.
+Only depends on `numpy`. A naive $\sum g_i^2$ disagrees with the
+platform verifier in the 6th decimal — see `verify.py` for the exact
+formula.
 
 ## Related repos
 
